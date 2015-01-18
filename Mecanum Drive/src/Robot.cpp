@@ -1,3 +1,5 @@
+//20150118 Programming - Teleop Programming
+
 #include "WPILib.h"
 
 /**
@@ -6,7 +8,7 @@
 class Robot: public SampleRobot
 {
 
-    // Channels for the wheels
+    // Channels for the wheels and joystick
     const static int frontLeftChannel	= 2;
     const static int rearLeftChannel	= 3;
     const static int frontRightChannel	= 1;
