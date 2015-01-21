@@ -21,8 +21,8 @@ class Robot: public SampleRobot
 public:
 	Robot() :
 			myRobot(0, 1),	// initialize the RobotDrive to use motor controllers on ports 0 and 1
-			stick(0)
-			xbox(1)
+			stick(1)
+			xbox(0)
 	{
 		myRobot.SetExpiration(0.1);
 	}
