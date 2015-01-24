@@ -1,51 +1,86 @@
-//20150118 Programming - Teleop Programming
-
 #include "WPILib.h"
+#include "string"
 
-/**
- * This is a demo program showing how to use Mecanum control with the RobotDrive class.
- */
-class Robot: public SampleRobot
+class Robot: public IterativeRobot
 {
 
-    // Channels for the wheels and joystick
-    const static int frontLeftChannel	= 2;
-    const static int rearLeftChannel	= 3;
-    const static int frontRightChannel	= 1;
-    const static int rearRightChannel	= 0;
-
-    const static int joystickChannel	= 0;
-
-	RobotDrive robotDrive;	// robot drive system
-	Joystick stick;			// only joystick
+	RobotDrive *m_robotDrive;		// RobotDrive object using PWM 1-4 for drive motors
+	Joystick *m_driveStick;         // Joystick object on USB port 1 (mecanum drive)
+	Talon *m_robotLift;
+	Joystick *m_liftStick;
+	Encoder *m_liftEncoder;
+	float rightXboxY;
+	bool rightBumper;
 
 public:
-	Robot() :
-			robotDrive(frontLeftChannel, rearLeftChannel,
-					   frontRightChannel, rearRightChannel),	// these must be initialized in the same order
-			stick(joystickChannel)								// as they are declared above.
+
+	Robot(void)
 	{
-		robotDrive.SetExpiration(0.1);
-		robotDrive.SetInvertedMotor(RobotDrive::kFrontLeftMotor, true);	// invert the left side motors
-		robotDrive.SetInvertedMotor(RobotDrive::kRearLeftMotor, true);	// you may need to change or remove this to match your robot
+		// Create a RobotDrive object using PWMS 1, 2, 3, and 4
+		m_robotDrive = new RobotDrive(0, 1);
+		// Define joystick being used at USB port #1 on the Drivers Station
+		m_driveStick = new Joystick(0);
+		// Twist is on Axis 3 for the Extreme 3D Pro
+		m_driveStick->SetAxisChannel(Joystick::kTwistAxis, 3);
+		// Create a RobotDrive object using PWMS 5
+		m_robotLift = new Talon(2);
+		m_liftEncoder = new Encoder(0, 1);
+		// Define joystick being used at USB port #2 on the Drivers Station
+		m_liftStick = new Joystick(1);
+		//
+
+
 	}
 
-	/**
-	 * Runs the motors with Mecanum drive.
-	 */
-	void OperatorControl()
-	{
-		robotDrive.SetSafetyEnabled(false);
-		while (IsOperatorControl() && IsEnabled())
-		{
-        	// Use the joystick X axis for lateral movement, Y axis for forward movement, and Z axis for rotation.
-        	// This sample does not use field-oriented drive, so the gyro input is set to zero.
-			robotDrive.MecanumDrive_Cartesian(stick.GetX(), stick.GetY(), stick.GetZ());
+private:
+	LiveWindow *lw;
 
-			Wait(0.005); // wait 5ms to avoid hogging CPU cycles
+	void RobotInit()
+	{
+		lw = LiveWindow::GetInstance();
+	}
+
+	void AutonomousInit()
+	{
+
+	}
+
+	void AutonomousPeriodic()
+	{
+
+	}
+
+	void TeleopInit()
+	{
+
+		m_liftEncoder->Reset();
+
+	}
+
+	void TeleopPeriodic()
+	{
+
+		rightXboxY = m_liftStick->GetRawAxis(5);
+
+		m_robotDrive->ArcadeDrive(m_driveStick);
+
+		if (abs(rightXboxY) >= 0.001){
+			m_robotLift->Set(rightXboxY);
 		}
+		else
+		{
+			m_robotLift->Set(0);
+		}
+		//printf("%F",rightXboxY);
+
+		printf("%F\n", m_liftEncoder->GetDistance());
+
 	}
 
+	void TestPeriodic()
+	{
+		lw->Run();
+	}
 };
 
 START_ROBOT_CLASS(Robot);
