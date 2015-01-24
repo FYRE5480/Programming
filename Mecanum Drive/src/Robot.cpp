@@ -27,6 +27,9 @@ public:
 		m_liftEncoder = new Encoder(0, 1);
 		// Define joystick being used at USB port #2 on the Drivers Station
 		m_liftStick = new Joystick(1);
+		lw = LiveWindow::GetInstance();
+		rightXboxY = 0;
+		rightBumper = false;
 		//
 
 
@@ -37,7 +40,7 @@ private:
 
 	void RobotInit()
 	{
-		lw = LiveWindow::GetInstance();
+
 	}
 
 	void AutonomousInit()
