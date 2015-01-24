@@ -1,7 +1,4 @@
 #include "WPILib.h"
-#include "Commands/Command.h"
-#include "Commands/ExampleCommand.h"
-#include "CommandBase.h"
 
 class Robot: public IterativeRobot
 {
@@ -11,67 +8,54 @@ class Robot: public IterativeRobot
 	Talon *m_robotLift;
 	Joystick *m_liftStick;
 
-private:
-	Command *autonomousCommand;
-	LiveWindow *lw;
+public:
 
 	Robot(void)
 	{
 		// Create a RobotDrive object using PWMS 1, 2, 3, and 4
-		m_robotDrive = new RobotDrive(1, 2, 3, 4);
+		m_robotDrive = new RobotDrive(0, 1, 2, 3);
 		// Define joystick being used at USB port #1 on the Drivers Station
-		m_driveStick = new Joystick(1);
+		m_driveStick = new Joystick(0);
 		// Twist is on Axis 3 for the Extreme 3D Pro
 		m_driveStick->SetAxisChannel(Joystick::kTwistAxis, 3);
 		// Create a RobotDrive object using PWMS 5
-		m_robotLift = new Talon(5)
+		m_robotLift = new Talon(4);
 		// Define joystick being used at USB port #2 on the Drivers Station
-		m_liftStick = new Joystick(2);
+		m_liftStick = new Joystick(1);
 	}
+
+private:
+	LiveWindow *lw;
+
 	void RobotInit()
 	{
-		CommandBase::init();
-		autonomousCommand = new ExampleCommand();
 		lw = LiveWindow::GetInstance();
-	}
-	
-	void DisabledPeriodic()
-	{
-		Scheduler::GetInstance()->Run();
 	}
 
 	void AutonomousInit()
 	{
-		if (autonomousCommand != NULL){
-			autonomousCommand->Start();
-		}
 
 	}
 
 	void AutonomousPeriodic()
 	{
-		Scheduler::GetInstance()->Run( m_liftStick.GetRawAxis(5));
+
 	}
 
 	void TeleopInit()
 	{
-		// This makes sure that the autonomous stops running when
-		// teleop starts running. If you want the autonomous to 
-		// continue until interrupted by another command, remove
-		// this line or comment it out.
-		if (autonomousCommand != NULL){
-			autonomousCommand->Cancel();
-		}
 
-		m_robotDrive->MecanumDrive_Cartesian(m_driveStick->GetX(), m_driveStick->GetY(), m_driveStick->GetTwist());
 
-		m_robotLift->Set()
+
 
 	}
 
 	void TeleopPeriodic()
 	{
-		Scheduler::GetInstance()->Run();
+		m_robotDrive->MecanumDrive_Cartesian(m_driveStick->GetX(), m_driveStick->GetY(), m_driveStick->GetTwist());
+
+		m_robotLift->Set(m_liftStick->GetY());
+
 	}
 
 	void TestPeriodic()
@@ -81,4 +65,3 @@ private:
 };
 
 START_ROBOT_CLASS(Robot);
-
