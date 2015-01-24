@@ -7,21 +7,25 @@ class Robot: public IterativeRobot
 	Joystick *m_driveStick;         // Joystick object on USB port 1 (mecanum drive)
 	Talon *m_robotLift;
 	Joystick *m_liftStick;
+	float rightXboxY;
 
 public:
 
 	Robot(void)
 	{
 		// Create a RobotDrive object using PWMS 1, 2, 3, and 4
-		m_robotDrive = new RobotDrive(0, 1, 2, 3);
+		m_robotDrive = new RobotDrive(0, 1);
 		// Define joystick being used at USB port #1 on the Drivers Station
 		m_driveStick = new Joystick(0);
 		// Twist is on Axis 3 for the Extreme 3D Pro
 		m_driveStick->SetAxisChannel(Joystick::kTwistAxis, 3);
 		// Create a RobotDrive object using PWMS 5
-		m_robotLift = new Talon(4);
+		m_robotLift = new Talon(2);
 		// Define joystick being used at USB port #2 on the Drivers Station
 		m_liftStick = new Joystick(1);
+		//
+
+
 	}
 
 private:
@@ -52,9 +56,14 @@ private:
 
 	void TeleopPeriodic()
 	{
-		m_robotDrive->MecanumDrive_Cartesian(m_driveStick->GetX(), m_driveStick->GetY(), m_driveStick->GetTwist());
 
-		m_robotLift->Set(m_liftStick->GetY());
+		rightXboxY = m_liftStick->GetRawAxis(5);
+
+		Command.PrintCommand(rightXboxY);
+
+		m_robotDrive->ArcadeDrive(m_driveStick);
+
+		m_robotLift->Set(rightXboxY);
 
 	}
 
