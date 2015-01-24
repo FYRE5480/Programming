@@ -1,4 +1,5 @@
 #include "WPILib.h"
+#include "string"
 
 class Robot: public IterativeRobot
 {
@@ -7,7 +8,9 @@ class Robot: public IterativeRobot
 	Joystick *m_driveStick;         // Joystick object on USB port 1 (mecanum drive)
 	Talon *m_robotLift;
 	Joystick *m_liftStick;
+	Encoder *m_liftEncoder;
 	float rightXboxY;
+	bool rightBumper;
 
 public:
 
@@ -21,6 +24,7 @@ public:
 		m_driveStick->SetAxisChannel(Joystick::kTwistAxis, 3);
 		// Create a RobotDrive object using PWMS 5
 		m_robotLift = new Talon(2);
+		m_liftEncoder = new Encoder(0, 1);
 		// Define joystick being used at USB port #2 on the Drivers Station
 		m_liftStick = new Joystick(1);
 		//
@@ -49,8 +53,7 @@ private:
 	void TeleopInit()
 	{
 
-
-
+		m_liftEncoder->Reset();
 
 	}
 
@@ -58,12 +61,23 @@ private:
 	{
 
 		rightXboxY = m_liftStick->GetRawAxis(5);
-
-		Command.PrintCommand(rightXboxY);
-
+		rightBumber = m_liftStick->GetRawButton(6);
+			/*
 		m_robotDrive->ArcadeDrive(m_driveStick);
+		if (abs(rightXboxY) >= 0.001){
+			m_robotLift->Set(rightXboxY);
+		}
+		else
+		{
+			m_robotLift->Set(0);
+		}*/
+		if (rightBumber == true){
 
-		m_robotLift->Set(rightXboxY);
+			m_robotLift->Set(rightXboxY);
+
+		}
+		//printf("%F",rightXboxY);
+		printf("%F\n", m_liftEncoder->GetDistance());
 
 	}
 
