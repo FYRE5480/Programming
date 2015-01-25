@@ -42,7 +42,32 @@ private:
 
 	void AutonomousInit()
 	{
+		//liftEncoder->Reset();
+		// lift box
+		m_robotLift->Set(.5);
+		Wait(1000);
+		// while(m_liftEncoder<=1000) {
+		// m_robotLift->Set(.5)
+		//Wait(20)}
+		m_robotLift->Set(0);
 
+		//drive forward
+		m_robotDrive->Drive(.5, 0)
+		Wait(8000);
+		m_robotDrive->Drive(0,0)
+
+		// lower box
+		m_robotLift->Set(-.5);
+		Wait(1000);
+		// while(m_liftEncoder>=500) {
+		// m_robotLift->Set(.5)
+		// Wait(20)}
+		m_robotLift->Set(0);
+
+		// drive backward
+		m_robotDrive(-.5,0);
+		Wait(1000);
+		m_robotDrive(0,0);
 	}
 
 	void AutonomousPeriodic()
@@ -62,8 +87,9 @@ private:
 
 		rightXboxY = m_liftStick->GetRawAxis(5);
 		rightBumber = m_liftStick->GetRawButton(6);
-			/*
+
 		m_robotDrive->ArcadeDrive(m_driveStick);
+		/*
 		if (abs(rightXboxY) >= 0.001){
 			m_robotLift->Set(rightXboxY);
 		}
