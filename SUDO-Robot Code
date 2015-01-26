@@ -1,7 +1,7 @@
 #include "WPILib.h"
 #include "string"
 
-class Robot: public IterativeRobot
+class FYRERobot: public IterativeRobot
 {
 
 	RobotDrive *m_robotDrive;		// RobotDrive object using PWM 1-4 for drive motors
@@ -9,8 +9,12 @@ class Robot: public IterativeRobot
 	Talon *m_robotLift;
 	Joystick *m_liftStick;
 	Encoder *m_liftEncoder;
+	DigitalInput *m_topLimitSwitch
+	DigitalInput *m_bottomLimitSwitch
 	float rightXboxY;
 	bool rightBumper;
+	bool m_topLimit;
+	bool m_bottomLimit;
 
 public:
 
@@ -27,7 +31,9 @@ public:
 		m_liftEncoder = new Encoder(0, 1);
 		// Define joystick being used at USB port #2 on the Drivers Station
 		m_liftStick = new Joystick(1);
-		//
+		// Define two swtiches
+		m_topLimitSwitch = new DigitalInput(4);
+		m_bottomLimitSwtich = new DigitalInput(5);
 
 
 	}
@@ -52,9 +58,9 @@ private:
 		m_robotLift->Set(0);
 
 		//drive forward
-		m_robotDrive->Drive(.5, 0)
+		m_robotDrive->Drive(.5, 0);
 		Wait(8000);
-		m_robotDrive->Drive(0,0)
+		m_robotDrive->Drive(0,0);
 
 		// lower box
 		m_robotLift->Set(-.5);
@@ -65,9 +71,9 @@ private:
 		m_robotLift->Set(0);
 
 		// drive backward
-		m_robotDrive(-.5,0);
+		m_robotDrive->Drive(-.5,0);
 		Wait(1000);
-		m_robotDrive(0,0);
+		m_robotDrive->Drive(0,0);
 	}
 
 	void AutonomousPeriodic()
@@ -84,18 +90,21 @@ private:
 
 	void TeleopPeriodic()
 	{
-
+		// Update Variables
 		rightXboxY = m_liftStick->GetRawAxis(5);
-		rightBumber = m_liftStick->GetRawButton(6);
+		rightBumper = m_liftStick->GetRawButton(6);
+		m_topLimit = m_topLimitSwitch->Get();
+		m_bottomLimit = m_bottomLimitSwitch->Get();
 
 
-			m_robotDrive->ArcadeDrive(m_driveStick);
-		if(m_botLimit == 1 && rightXboxY<=0){
+		m_robotDrive->ArcadeDrive(m_driveStick);
+
+		if(m_bottomLimit == 1 && rightXboxY<=0){
 
 			m_robotLift->Set(0);
 
 		}
-		if else(m_topLimit == 1 && rightXboxY >=0){
+		else if(m_topLimit == 1 && rightXboxY >=0){
 
 			m_robotLift->Set(0)
 
@@ -109,7 +118,7 @@ private:
 				m_robotLift->Set(0);
 			}
 		}
-		if (rightBumber == true){
+		if (rightBumper == true){
 
 			m_robotLift->Set(rightXboxY);
 
@@ -125,4 +134,4 @@ private:
 	}
 };
 
-START_ROBOT_CLASS(Robot);
+START_ROBOT_CLASS(FYRERobot);
