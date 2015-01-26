@@ -88,15 +88,27 @@ private:
 		rightXboxY = m_liftStick->GetRawAxis(5);
 		rightBumber = m_liftStick->GetRawButton(6);
 
-		m_robotDrive->ArcadeDrive(m_driveStick);
-		/*
-		if (abs(rightXboxY) >= 0.001){
-			m_robotLift->Set(rightXboxY);
-		}
-		else
-		{
+
+			m_robotDrive->ArcadeDrive(m_driveStick);
+		if(m_botLimit == 1 && rightXboxY<=0){
+
 			m_robotLift->Set(0);
-		}*/
+
+		}
+		if else(m_topLimit == 1 && rightXboxY >=0){
+
+			m_robotLift->Set(0)
+
+		}
+		else{
+			if (rightXboxY >= 0.2 || rightXbox <= -.2){
+				m_robotLift->Set(rightXboxY);
+			}
+			else
+			{
+				m_robotLift->Set(0);
+			}
+		}
 		if (rightBumber == true){
 
 			m_robotLift->Set(rightXboxY);
