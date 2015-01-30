@@ -9,8 +9,8 @@ class FYRERobot: public IterativeRobot
 	Talon *m_robotLift;
 	Joystick *m_liftStick;
 	Encoder *m_liftEncoder;
-	DigitalInput *m_topLimitSwitch
-	DigitalInput *m_bottomLimitSwitch
+	DigitalInput *m_topLimitSwitch;
+	DigitalInput *m_bottomLimitSwitch;
 	float rightXboxY;
 	bool rightBumper;
 	bool m_topLimit;
@@ -18,7 +18,7 @@ class FYRERobot: public IterativeRobot
 
 public:
 
-	Robot(void)
+	FYRERobot(void)
 	{
 		// Create a RobotDrive object using PWMS 1, 2, 3, and 4
 		m_robotDrive = new RobotDrive(0, 1);
@@ -33,7 +33,7 @@ public:
 		m_liftStick = new Joystick(1);
 		// Define two swtiches
 		m_topLimitSwitch = new DigitalInput(4);
-		m_bottomLimitSwtich = new DigitalInput(5);
+		m_bottomLimitSwitch = new DigitalInput(5);
 
 
 	}
@@ -97,7 +97,7 @@ private:
 		m_bottomLimit = m_bottomLimitSwitch->Get();
 
 
-		m_robotDrive->ArcadeDrive(m_driveStick);
+		m_robotDrive->ArcadeDrive(m_driveStick->GetY(), (m_driveStick->GetX())*-1);
 
 		if(m_bottomLimit == 1 && rightXboxY<=0){
 
@@ -106,11 +106,11 @@ private:
 		}
 		else if(m_topLimit == 1 && rightXboxY >=0){
 
-			m_robotLift->Set(0)
+			m_robotLift->Set(0);
 
 		}
 		else{
-			if (rightXboxY >= 0.2 || rightXbox <= -.2){
+			if (rightXboxY >= 0.2 || rightXboxY <= -0.2){
 				m_robotLift->Set(rightXboxY);
 			}
 			else
