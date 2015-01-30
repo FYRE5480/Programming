@@ -72,7 +72,7 @@ private:
 		driveStickX = m_driveStick->GetRawAxis(1);
 		driveStickY = m_driveStick->GetRawAxis(0);
 
-		if ((pow(driveStickY, 2) + pow(driveStickX, 2))<.5){
+		if (driveStickY>.5){
 			m_robotDrive->ArcadeDrive(m_driveStick->GetRawAxis(1), m_driveStick->GetRawAxis(0),true);
 		}
 		else
