@@ -101,7 +101,7 @@ private:
 		m_bottomLimit = m_bottomLimitSwitch->Get();
 		driveStickX = (m_driveStick->GetX())*-1;
 		driveStickY = m_driveStick->GetY();
-		driveThrottle = ((m_driveStick->GetThrottle)+1)/2);
+		driveThrottle = (((((m_driveStick->GetThrottle)*-1)+1)/4)+.5);
 
 		if (abs(driveStickX)>.5){
 		}
