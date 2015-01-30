@@ -1,5 +1,6 @@
 #include "WPILib.h"
 #include "string"
+#include <cmath>
 
 class Robot: public IterativeRobot
 {
@@ -10,6 +11,8 @@ class Robot: public IterativeRobot
 	Joystick *m_liftStick;
 	Encoder *m_liftEncoder;
 	float rightXboxY;
+	float driveStickX;
+	float driveStickY;
 	bool rightBumper;
 
 public:
@@ -29,6 +32,8 @@ public:
 		m_liftStick = new Joystick(1);
 		lw = LiveWindow::GetInstance();
 		rightXboxY = 0;
+		driveStickX = 0;
+		driveStickY = 0;
 		rightBumper = false;
 		//
 
@@ -64,10 +69,19 @@ private:
 	{
 
 		rightXboxY = m_liftStick->GetRawAxis(5);
+		driveStickX = m_driveStick->GetRawAxis(1);
+		driveStickY = m_driveStick->GetRawAxis(0);
 
-		m_robotDrive->ArcadeDrive(m_driveStick);
+		if ((pow(driveStickY, 2) + pow(driveStickX, 2))<.5){
+			m_robotDrive->ArcadeDrive(m_driveStick->GetRawAxis(1), m_driveStick->GetRawAxis(0),true);
+		}
+		else
+		{
+			m_robotDrive->ArcadeDrive(0,m_driveStick->GetRawAxis(0),true);
+		}
 
-		if (abs(rightXboxY) >= 0.001){
+
+		if (abs(rightXboxY) >= 0.01){
 			m_robotLift->Set(rightXboxY);
 		}
 		else
