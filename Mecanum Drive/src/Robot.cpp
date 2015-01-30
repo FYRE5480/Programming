@@ -2,7 +2,7 @@
 #include "string"
 #include <cmath>
 
-class Robot: public IterativeRobot
+class FYRERobot: public IterativeRobot
 {
 
 	RobotDrive *m_robotDrive;		// RobotDrive object using PWM 1-4 for drive motors
@@ -10,14 +10,19 @@ class Robot: public IterativeRobot
 	Talon *m_robotLift;
 	Joystick *m_liftStick;
 	Encoder *m_liftEncoder;
+	DigitalInput *m_topLimitSwitch;
+	DigitalInput *m_bottomLimitSwitch;
 	float rightXboxY;
+	bool rightBumper;
+	bool m_topLimit;
+	bool m_bottomLimit;
 	float driveStickX;
 	float driveStickY;
-	bool rightBumper;
+	float driveThrottle;
 
 public:
 
-	Robot(void)
+	FYRERobot(void)
 	{
 		// Create a RobotDrive object using PWMS 1, 2, 3, and 4
 		m_robotDrive = new RobotDrive(0, 1);
@@ -30,12 +35,9 @@ public:
 		m_liftEncoder = new Encoder(0, 1);
 		// Define joystick being used at USB port #2 on the Drivers Station
 		m_liftStick = new Joystick(1);
-		lw = LiveWindow::GetInstance();
-		rightXboxY = 0;
-		driveStickX = 0;
-		driveStickY = 0;
-		rightBumper = false;
-		//
+		// Define two swtiches
+		m_topLimitSwitch = new DigitalInput(4);
+		m_bottomLimitSwitch = new DigitalInput(5);
 
 
 	}
@@ -45,12 +47,37 @@ private:
 
 	void RobotInit()
 	{
-
+		lw = LiveWindow::GetInstance();
 	}
 
 	void AutonomousInit()
 	{
+		//liftEncoder->Reset();
+		// lift box
+		m_robotLift->Set(.5);
+		Wait(1000);
+		// while(m_liftEncoder<=1000) {
+		// m_robotLift->Set(.5)
+		//Wait(20)}
+		m_robotLift->Set(0);
 
+		//drive forward
+		m_robotDrive->Drive(.5, 0);
+		Wait(8000);
+		m_robotDrive->Drive(0,0);
+
+		// lower box
+		m_robotLift->Set(-.5);
+		Wait(1000);
+		// while(m_liftEncoder>=500) {
+		// m_robotLift->Set(.5)
+		// Wait(20)}
+		m_robotLift->Set(0);
+
+		// drive backward
+		m_robotDrive->Drive(-.5,0);
+		Wait(1000);
+		m_robotDrive->Drive(0,0);
 	}
 
 	void AutonomousPeriodic()
@@ -67,29 +94,52 @@ private:
 
 	void TeleopPeriodic()
 	{
-
+		// Update Variables
 		rightXboxY = m_liftStick->GetRawAxis(5);
-		driveStickX = m_driveStick->GetRawAxis(1);
-		driveStickY = m_driveStick->GetRawAxis(0);
+		rightBumper = m_liftStick->GetRawButton(6);
+		m_topLimit = m_topLimitSwitch->Get();
+		m_bottomLimit = m_bottomLimitSwitch->Get();
+		driveStickX = (m_driveStick->GetX())*-1;
+		driveStickY = m_driveStick->GetY();
+		driveThrottle = ((m_driveStick->GetThrottle)+1)/2);
 
-		if (driveStickY>.5){
-			m_robotDrive->ArcadeDrive(m_driveStick->GetRawAxis(1), m_driveStick->GetRawAxis(0),true);
+		if (abs(driveStickX)>.5){
 		}
 		else
 		{
-			m_robotDrive->ArcadeDrive(0,m_driveStick->GetRawAxis(0),true);
+			driveStickX = 0;
 		}
 
+		driveStickX = driveStickX * driveThrottle;
+		driveStickY = driveStickY * driveThrottle;
 
-		if (abs(rightXboxY) >= 0.01){
-			m_robotLift->Set(rightXboxY);
-		}
-		else
-		{
+		m_robotDrive->ArcadeDrive(driveStickY, driveStickX);
+
+		if(m_bottomLimit == 1 && rightXboxY<=0){
+
 			m_robotLift->Set(0);
+
+		}
+		else if(m_topLimit == 1 && rightXboxY >=0){
+
+			m_robotLift->Set(0);
+
+		}
+		else{
+			if (rightXboxY >= 0.2 || rightXboxY <= -0.2){
+				m_robotLift->Set(rightXboxY);
+			}
+			else
+			{
+				m_robotLift->Set(0);
+			}
+		}
+		if (rightBumper == true){
+
+			m_robotLift->Set(rightXboxY);
+
 		}
 		//printf("%F",rightXboxY);
-
 		printf("%F\n", m_liftEncoder->GetDistance());
 
 	}
@@ -100,4 +150,4 @@ private:
 	}
 };
 
-START_ROBOT_CLASS(Robot);
+START_ROBOT_CLASS(FYRERobot);
