@@ -12,6 +12,7 @@ class FYRERobot: public IterativeRobot
 	Encoder *m_liftEncoder;
 	DigitalInput *m_topLimitSwitch;
 	DigitalInput *m_bottomLimitSwitch;
+	LiveWindow *lw;
 	float rightXboxY;
 	bool rightBumper;
 	bool m_topLimit;
@@ -19,31 +20,47 @@ class FYRERobot: public IterativeRobot
 	float driveStickX;
 	float driveStickY;
 	float driveThrottle;
+	float driveSpeed;
+	float driveTurn;
 
 public:
 
 	FYRERobot(void)
 	{
-		// Create a RobotDrive object using PWMS 1, 2, 3, and 4
+		// Create a RobotDrive object using PWMS 0 and 1
 		m_robotDrive = new RobotDrive(0, 1);
+
 		// Define joystick being used at USB port #1 on the Drivers Station
 		m_driveStick = new Joystick(0);
-		// Twist is on Axis 3 for the Extreme 3D Pro
-		m_driveStick->SetAxisChannel(Joystick::kTwistAxis, 3);
-		// Create a RobotDrive object using PWMS 5
-		m_robotLift = new Talon(2);
-		m_liftEncoder = new Encoder(0, 1);
 		// Define joystick being used at USB port #2 on the Drivers Station
 		m_liftStick = new Joystick(1);
+
+		// Lift Motor declaration
+		m_robotLift = new Talon(2);
+		m_liftEncoder = new Encoder(0, 1);
+
 		// Define two swtiches
 		m_topLimitSwitch = new DigitalInput(4);
 		m_bottomLimitSwitch = new DigitalInput(5);
 
+		// Live Window declaration
+		lw = new LiveWindow();
+
+
+		// Variable Declarations
+		driveStickX = 0;
+		driveStickY = 0;
+		rightXboxY = 0;
+		rightBumper = 0;
+		driveThrottle = 0;
+		m_topLimit = 0;
+		m_bottomLimit = 0;
+		driveSpeed = 0;
+		driveTurn = 0;
 
 	}
 
 private:
-	LiveWindow *lw;
 
 	void RobotInit()
 	{
@@ -101,31 +118,35 @@ private:
 		m_bottomLimit = m_bottomLimitSwitch->Get();
 		driveStickX = (m_driveStick->GetX())*-1;
 		driveStickY = m_driveStick->GetY();
-		driveThrottle = ((m_driveStick->GetThrottle)+1)/2);
+		driveThrottle = ((m_driveStick->GetThrottle()+1)/2);
 
-		if (abs(driveStickX)>.5){
-		}
-		else
-		{
+		// Dead zone for drive turning
+		if (abs(driveStickX)<.5){
 			driveStickX = 0;
 		}
 
-		driveStickX = driveStickX * driveThrottle;
-		driveStickY = driveStickY * driveThrottle;
+		// Applying throttle to inputs
+		driveTurn = driveStickX * driveThrottle;
+		driveSpeed = driveStickY * driveThrottle;
 
-		m_robotDrive->ArcadeDrive(driveStickY, driveStickX);
+		// Driving the drive speeds
+		m_robotDrive->ArcadeDrive(driveSpeed, driveTurn);
 
-		if(m_bottomLimit == 1 && rightXboxY<=0){
+		// Arm motor shutoff at lower level
+		if(m_bottomLimit == 1 && rightXboxY >=0){
 
 			m_robotLift->Set(0);
 
 		}
-		else if(m_topLimit == 1 && rightXboxY >=0){
+
+		// Arm motor shutoff upper level
+		else if(m_topLimit == 1 && rightXboxY <=0){
 
 			m_robotLift->Set(0);
 
 		}
 		else{
+			// Arm motor deadzone and power
 			if (rightXboxY >= 0.2 || rightXboxY <= -0.2){
 				m_robotLift->Set(rightXboxY);
 			}
@@ -134,13 +155,17 @@ private:
 				m_robotLift->Set(0);
 			}
 		}
+
+		// Arm motor limit override
 		if (rightBumper == true){
 
 			m_robotLift->Set(rightXboxY);
 
 		}
+
+		// Test print lines
 		//printf("%F",rightXboxY);
-		printf("%F\n", m_liftEncoder->GetDistance());
+		//printf("%F\n", m_liftEncoder->GetDistance());
 
 	}
 
