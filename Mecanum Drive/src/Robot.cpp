@@ -39,6 +39,10 @@ public:
 		m_topLimitSwitch = new DigitalInput(4);
 		m_bottomLimitSwitch = new DigitalInput(5);
 
+		CameraServer::GetInstance()->SetQuality(50);
+		//the camera name (ex "cam0") can be found through the roborio web interface
+		CameraServer::GetInstance()->StartAutomaticCapture("Logitech HD Webcam c310");
+
 
 	}
 
@@ -78,6 +82,8 @@ private:
 		m_robotDrive->Drive(-.5,0);
 		Wait(1000);
 		m_robotDrive->Drive(0,0);
+
+
 	}
 
 	void AutonomousPeriodic()
