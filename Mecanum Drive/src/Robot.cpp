@@ -10,6 +10,8 @@ class FYRERobot: public IterativeRobot
 	Talon *m_robotLift;
 	Joystick *m_liftStick;
 	Encoder *m_liftEncoder;
+	Encoder *m_leftEncoder;
+	Encoder *m_rightEncoder;
 	DigitalInput *m_topLimitSwitch;
 	DigitalInput *m_bottomLimitSwitch;
 	float rightXboxY;
@@ -33,15 +35,20 @@ public:
 		// Create a RobotDrive object using PWMS 5
 		m_robotLift = new Talon(2);
 		m_liftEncoder = new Encoder(0, 1);
+		m_liftEncoder -> SetDistancePerPulse(42069)
+		m_leftEncoder = new Encoder(2,3);
+		m_leftEncoder -> SetDistancePerPulse(42069)
+		m_rightEncoder = new Encoder(4,5);
+		m_rightEncoder -> SetDistancePerPulse(42069)
 		// Define joystick being used at USB port #2 on the Drivers Station
 		m_liftStick = new Joystick(1);
 		// Define two swtiches
 		m_topLimitSwitch = new DigitalInput(4);
 		m_bottomLimitSwitch = new DigitalInput(5);
 
-		CameraServer::GetInstance()->SetQuality(50);
+
 		//the camera name (ex "cam0") can be found through the roborio web interface
-		CameraServer::GetInstance()->StartAutomaticCapture("Logitech HD Webcam c310");
+
 
 
 	}
@@ -51,12 +58,14 @@ private:
 
 	void RobotInit()
 	{
+		CameraServer::GetInstance()->SetQuality(50);
+		CameraServer::GetInstance()->StartAutomaticCapture("cam0");
 		lw = LiveWindow::GetInstance();
 	}
 
 	void AutonomousInit()
 	{
-		//liftEncoder->Reset();
+		/*//liftEncoder->Reset();
 		// lift box
 		m_robotLift->Set(.5);
 		Wait(1000);
@@ -81,8 +90,27 @@ private:
 		// drive backward
 		m_robotDrive->Drive(-.5,0);
 		Wait(1000);
-		m_robotDrive->Drive(0,0);
+		m_robotDrive->Drive(0,0);*/
 
+		liftEncoder -> Reset();
+		leftEncoder -> Reset();
+		rightEncoder -> Reset();
+
+		while(m_liftEncoder->Get()<18){
+			m_robotLift -> Set(.5);
+		}
+
+		while(m_leftEncoder->Get()<117 && m_rightEncoder->Get()<117){
+			m_robotDrive -> Drive(.5,0)
+		}
+
+		while(m_bottomLimitSwitch->Get() == false){
+			m_robotLift -> Set(-.5);
+		}
+
+		while(m_leftEncoder->Get()>100 && m_rightEncoder->Get()<100){
+			m_robotDrive -> Drive(-.5,0)
+		}
 
 	}
 
