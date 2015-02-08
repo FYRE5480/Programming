@@ -14,8 +14,8 @@ class FYRERobot: public IterativeRobot
 	Encoder *m_rightEncoder;*/
 	DigitalInput *m_topLimitSwitch;
 	DigitalInput *m_bottomLimitSwitch;
-	Compresser *m_compresser;
-	Solenoid *m_solenoid
+	//Compressor *m_compressor;
+	Solenoid *m_solenoid;
 	float rightXboxY;
 	bool rightBumper;
 	bool m_topLimit;
@@ -38,12 +38,12 @@ public:
 		// Create a RobotDrive object using PWMS 5
 		m_robotLift = new Talon(2);
 		/*m_liftEncoder = new Encoder(0, 1);
-		m_liftEncoder -> SetDistancePerPulse(42069);
+		m_liftEncoder -> SetDistancePerPulse(22.7272727272727272);
 		m_leftEncoder = new Encoder(2,3);
-		m_leftEncoder -> SetDistancePerPulse(42069);
+		m_leftEncoder -> SetDistancePerPulse(22.7272727272727272);
 		m_rightEncoder = new Encoder(4,5);
-		m_rightEncoder -> SetDistancePerPulse(42069);
-		m_compresser = new Compresser (4,2);
+		m_rightEncoder -> SetDistancePerPulse(22.7272727272727272);
+		m_compressor = new Compressor (4,2);
 		m_solenoid = new Solenoid (1,1)*/
 		// Define joystick being used at USB port #2 on the Drivers Station
 		m_liftStick = new Joystick(1);
@@ -61,12 +61,12 @@ private:
 
 	void RobotInit()
 	{
-		/*CameraServer::GetInstance()->SetQuality(50);
-		CameraServer::GetInstance()->StartAutomaticCapture("cam0");*/
-		LiveWindow.addActuator("Drive Train", "Left", new Jaguar(0));
-		LiveWindow.addActuator("Drive Train", "Right", new Jaguar(1));
-		LiveWindow.addActuator("Lift Arm", "Motor", new Talon(2));
-		LiveWindow.addActuator("Lift Arm", "Brakes", new Solenoid(1,1));
+		CameraServer::GetInstance()->SetQuality(50);
+		CameraServer::GetInstance()->StartAutomaticCapture("cam0");
+		lw->AddActuator("Drive Train", "Left", new Jaguar(0));
+		lw->AddActuator("Drive Train", "Right", new Jaguar(1));
+		lw->AddActuator("Lift Arm", "Motor", new Talon(2));
+		lw->AddActuator("Lift Arm", "Brakes", new Solenoid(1,1));
 		lw = LiveWindow::GetInstance();
 	}
 
@@ -145,7 +145,7 @@ private:
 		driveStickY = m_driveStick->GetY();
 		driveThrottle = (((((m_driveStick->GetThrottle())*-1)+1)/4)+.5);
 
-		/*if (abs(driveStickX)>.5){
+		if (abs(driveStickX)>.2){
 		}
 		else
 		{
@@ -155,9 +155,9 @@ private:
 		driveStickX = driveStickX * driveThrottle;
 		driveStickY = driveStickY * driveThrottle;
 
-		m_robotDrive->ArcadeDrive(driveStickY, driveStickX);*/
+		m_robotDrive->ArcadeDrive(driveStickY, driveStickX);
 
-		/*if(m_bottomLimit == 1 && rightXboxY<=0){
+		if(m_bottomLimit == 1 && rightXboxY<=0){
 
 			m_robotLift->Set(0);
 
@@ -175,8 +175,8 @@ private:
 			{
 				m_robotLift->Set(0);
 			}
-		}*/
-		m_robotLift->Set(rightXboxY);
+		}
+
 	/*	if (rightBumper == true){
 
 			m_robotLift->Set(rightXboxY);
