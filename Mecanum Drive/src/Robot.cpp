@@ -9,11 +9,13 @@ class FYRERobot: public IterativeRobot
 	Joystick *m_driveStick;         // Joystick object on USB port 1 (mecanum drive)
 	Talon *m_robotLift;
 	Joystick *m_liftStick;
-	Encoder *m_liftEncoder;
+	/*Encoder *m_liftEncoder;
 	Encoder *m_leftEncoder;
-	Encoder *m_rightEncoder;
+	Encoder *m_rightEncoder;*/
 	DigitalInput *m_topLimitSwitch;
 	DigitalInput *m_bottomLimitSwitch;
+	Compresser *m_compresser;
+	Solenoid *m_solenoid
 	float rightXboxY;
 	bool rightBumper;
 	bool m_topLimit;
@@ -26,6 +28,7 @@ public:
 
 	FYRERobot(void)
 	{
+
 		// Create a RobotDrive object using PWMS 1, 2, 3, and 4
 		m_robotDrive = new RobotDrive(0, 1);
 		// Define joystick being used at USB port #1 on the Drivers Station
@@ -34,12 +37,14 @@ public:
 		m_driveStick->SetAxisChannel(Joystick::kTwistAxis, 3);
 		// Create a RobotDrive object using PWMS 5
 		m_robotLift = new Talon(2);
-		m_liftEncoder = new Encoder(0, 1);
-		m_liftEncoder -> SetDistancePerPulse(42069)
+		/*m_liftEncoder = new Encoder(0, 1);
+		m_liftEncoder -> SetDistancePerPulse(42069);
 		m_leftEncoder = new Encoder(2,3);
-		m_leftEncoder -> SetDistancePerPulse(42069)
+		m_leftEncoder -> SetDistancePerPulse(42069);
 		m_rightEncoder = new Encoder(4,5);
-		m_rightEncoder -> SetDistancePerPulse(42069)
+		m_rightEncoder -> SetDistancePerPulse(42069);
+		m_compresser = new Compresser (4,2);
+		m_solenoid = new Solenoid (1,1)*/
 		// Define joystick being used at USB port #2 on the Drivers Station
 		m_liftStick = new Joystick(1);
 		// Define two swtiches
@@ -49,8 +54,6 @@ public:
 
 		//the camera name (ex "cam0") can be found through the roborio web interface
 
-
-
 	}
 
 private:
@@ -58,8 +61,12 @@ private:
 
 	void RobotInit()
 	{
-		CameraServer::GetInstance()->SetQuality(50);
-		CameraServer::GetInstance()->StartAutomaticCapture("cam0");
+		/*CameraServer::GetInstance()->SetQuality(50);
+		CameraServer::GetInstance()->StartAutomaticCapture("cam0");*/
+		LiveWindow.addActuator("Drive Train", "Left", new Jaguar(0));
+		LiveWindow.addActuator("Drive Train", "Right", new Jaguar(1));
+		LiveWindow.addActuator("Lift Arm", "Motor", new Talon(2));
+		LiveWindow.addActuator("Lift Arm", "Brakes", new Solenoid(1,1));
 		lw = LiveWindow::GetInstance();
 	}
 
@@ -92,16 +99,16 @@ private:
 		Wait(1000);
 		m_robotDrive->Drive(0,0);*/
 
-		liftEncoder -> Reset();
-		leftEncoder -> Reset();
-		rightEncoder -> Reset();
-
+		//liftEncoder -> Reset();
+		//leftEncoder -> Reset();
+		//rightEncoder -> Reset();
+/*
 		while(m_liftEncoder->Get()<18){
 			m_robotLift -> Set(.5);
 		}
 
 		while(m_leftEncoder->Get()<117 && m_rightEncoder->Get()<117){
-			m_robotDrive -> Drive(.5,0)
+			m_robotDrive -> Drive(.5,0);
 		}
 
 		while(m_bottomLimitSwitch->Get() == false){
@@ -109,9 +116,9 @@ private:
 		}
 
 		while(m_leftEncoder->Get()>100 && m_rightEncoder->Get()<100){
-			m_robotDrive -> Drive(-.5,0)
+			m_robotDrive -> Drive(-.5,0);
 		}
-
+*/
 	}
 
 	void AutonomousPeriodic()
@@ -122,7 +129,8 @@ private:
 	void TeleopInit()
 	{
 
-		m_liftEncoder->Reset();
+		//m_liftEncoder->Reset();
+		//m_compresser->Start();
 
 	}
 
@@ -137,7 +145,7 @@ private:
 		driveStickY = m_driveStick->GetY();
 		driveThrottle = (((((m_driveStick->GetThrottle())*-1)+1)/4)+.5);
 
-		if (abs(driveStickX)>.5){
+		/*if (abs(driveStickX)>.5){
 		}
 		else
 		{
@@ -147,9 +155,9 @@ private:
 		driveStickX = driveStickX * driveThrottle;
 		driveStickY = driveStickY * driveThrottle;
 
-		m_robotDrive->ArcadeDrive(driveStickY, driveStickX);
+		m_robotDrive->ArcadeDrive(driveStickY, driveStickX);*/
 
-		if(m_bottomLimit == 1 && rightXboxY<=0){
+		/*if(m_bottomLimit == 1 && rightXboxY<=0){
 
 			m_robotLift->Set(0);
 
@@ -167,14 +175,15 @@ private:
 			{
 				m_robotLift->Set(0);
 			}
-		}
-		if (rightBumper == true){
+		}*/
+		m_robotLift->Set(rightXboxY);
+	/*	if (rightBumper == true){
 
 			m_robotLift->Set(rightXboxY);
 
-		}
+		}*/
 		//printf("%F",rightXboxY);
-		printf("%F\n", m_liftEncoder->GetDistance());
+		printf("%F\n",rightXboxY);
 
 	}
 
