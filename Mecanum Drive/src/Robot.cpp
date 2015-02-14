@@ -1,6 +1,7 @@
 #include "WPILib.h"
 #include "string"
 #include <cmath>
+#include <iostream>
 
 class FYRERobot: public IterativeRobot
 {
@@ -11,10 +12,8 @@ class FYRERobot: public IterativeRobot
 	Talon *m_robotLift;
 	Joystick *m_liftStick;
 	Encoder *m_liftEncoder;
-	Encoder *m_leftEncoder;
-	Encoder *m_rightEncoder;
-	DigitalInput *m_topLimitSwitch;
-	DigitalInput *m_bottomLimitSwitch;
+	//Encoder *m_leftEncoder;
+	//Encoder *m_rightEncoder;
 	DoubleSolenoid *m_solenoid;
 
 	float rightXboxY;
@@ -47,19 +46,17 @@ public:
 		// Create a RobotDrive object using PWMS 5
 		m_robotLift = new Talon(2);
 		// encoders and pnuematics
-		m_liftEncoder = new Encoder(0, 1);
+		m_liftEncoder = new Encoder(0, 1, true);
 		//m_liftEncoder -> SetDistancePerPulse(22.7272727272727272);
-		m_leftEncoder = new Encoder(2,3);
+		//m_leftEncoder = new Encoder(2,3);
 		//m_leftEncoder -> SetDistancePerPulse(39.7890543494609 );
-		m_rightEncoder = new Encoder(4,5);
+		//m_rightEncoder = new Encoder(4,5);
 		//m_rightEncoder -> SetDistancePerPulse(39.7890543494609 );
 
 		m_solenoid = new DoubleSolenoid (0,1);
 		// Define joystick being used at USB port #2 on the Drivers Station
 		m_liftStick = new Joystick(1);
 		// Define two swtiches
-		m_topLimitSwitch = new DigitalInput(6);
-		m_bottomLimitSwitch = new DigitalInput(7);
 
 
 		//the camera name (ex "cam0") can be found through the roborio web interface
@@ -86,9 +83,9 @@ private:
 
 	void AutonomousInit()
 	{
-		m_liftEncoder->Reset();
-		m_leftEncoder->Reset();
-		m_rightEncoder->Reset();
+		//m_liftEncoder->Reset();
+		//m_leftEncoder->Reset();
+		//m_rightEncoder->Reset();
 
 		/*autonomousChooser = (Command *) chooser->GetSelected();
 		autonomousChooser -> Start();*/
@@ -167,7 +164,7 @@ private:
 	void TeleopInit()
 	{
 
-		//m_liftEncoder->Reset();
+		m_liftEncoder->Reset();
 		solenoidValue = false;
 		level = 0;
 		newLiftEncoder = 0;
@@ -176,13 +173,12 @@ private:
 
 	void TeleopPeriodic()
 	{
-		printf("At start of TeleopInt");
+
 		// Update Variables
 		rightXboxY = m_liftStick->GetRawAxis(5);
 		rightBumper = m_liftStick->GetRawButton(6);
 		leftBumper = m_liftStick -> GetRawButton(5);
-		m_topLimit = m_topLimitSwitch->Get();
-		m_bottomLimit = m_bottomLimitSwitch->Get();
+		//liftEncoder = m_liftEncoder -> Get();
 
 		XboxA = m_liftStick -> GetRawButton(1);
 		XboxB = m_liftStick -> GetRawButton(2);
@@ -205,13 +201,14 @@ private:
 
 			if(level < 3){
 				//m_robotDrive -> Drive(0,0);
-				newLiftEncoder = m_liftEncoder->Get() - 250;
+				newLiftEncoder = m_liftEncoder->Get() + 670;
 				m_solenoid -> Set(m_solenoid-> kForward);
 				printf("%i/n", m_liftEncoder->Get());
-				while(m_liftEncoder->Get()>= newLiftEncoder){
-					m_robotLift -> Set(-.5);
+				while(m_liftEncoder->Get()<= newLiftEncoder){
+					m_robotLift -> Set(-1);
 					printf("%i/n", m_liftEncoder->Get());
 					setDriveTrain();
+					// = m_liftEncoder -> Get();
 				}
 
 
@@ -224,12 +221,17 @@ private:
 		else if(XboxB == true){
 			if(level > 0){
 				m_robotDrive -> Drive(0,0);
-				newLiftEncoder = m_liftEncoder->Get() - 250;
+				newLiftEncoder = m_liftEncoder -> Get() + 100;
+				{
+					m_robotLift -> Set(-.5);
+				}
+				 // make via encoder count
+				newLiftEncoder = m_liftEncoder->Get() - 200;
 				m_solenoid -> Set(m_solenoid-> kForward);
 				while(m_liftEncoder->Get()>= newLiftEncoder){
 
-					m_robotLift -> Set(-.5);
-					printf("%i/n", m_liftEncoder->Get());
+					m_robotLift -> Set(.5);
+					printf("%i\n", m_liftEncoder->Get());
 					setDriveTrain();
 
 				}
@@ -258,8 +260,10 @@ private:
 
 		}
 		//printf("%F",rightXboxY);
-		printf("At end of TeleopInt");
-
+		//printf("%i -- encoder\n", m_liftEncoder->Get());
+		std::cout << m_liftEncoder->Get() << ": encoder" << std::endl;
+		std::cout << level << ": level" << std::endl;
+		//printf("%i -- level\n", level);
 	}
 
 	void setDriveTrain()
@@ -267,12 +271,12 @@ private:
 		driveStickX = (m_driveStick->GetX())*-1;
 		driveStickY = m_driveStick->GetY();
 		driveThrottle = (((((m_driveStick->GetThrottle())*-1)+1)/4)+.5);
-		if (abs(driveStickX)>.2){
+		/*if (abs(driveStickX)>.2){
 		}
 		else
 		{
 			driveStickX = 0;
-		}
+		}*/
 		// Applying the throttle
 		driveStickX = driveStickX * driveThrottle;
 		driveStickY = driveStickY * driveThrottle;
