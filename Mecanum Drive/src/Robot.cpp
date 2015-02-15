@@ -15,6 +15,9 @@ class FYRERobot: public IterativeRobot
 	//Encoder *m_leftEncoder;
 	//Encoder *m_rightEncoder;
 	DoubleSolenoid *m_solenoid;
+	DigitalInput *autoSwitch;
+	Compressor *compressorA;
+	DigitalInput *compressorSwitch;
 
 	float rightXboxY;
 	bool rightBumper;
@@ -28,7 +31,9 @@ class FYRERobot: public IterativeRobot
 	int level;
 	bool XboxA;
 	bool XboxB;
+	bool XboxStart;
 	float newLiftEncoder;
+	bool workplease;
 
 public:
 
@@ -57,6 +62,11 @@ public:
 		// Define joystick being used at USB port #2 on the Drivers Station
 		m_liftStick = new Joystick(1);
 		// Define two swtiches
+		autoSwitch = new DigitalInput(6);
+
+		compressorA = new Compressor();
+
+		compressorSwitch = new DigitalInput(7);
 
 
 		//the camera name (ex "cam0") can be found through the roborio web interface
@@ -79,82 +89,84 @@ private:
 		lw->AddActuator("Lift Arm", "Motor", new Talon(2));
 		lw->AddActuator("Lift Arm", "Brakes", new Solenoid(1,1));*/
 		lw = LiveWindow::GetInstance();
+		compressorA -> ClearAllPCMStickyFaults();
+		compressorA -> Start();
 	}
 
-	void AutonomousInit()
+/*	void AutonomousInit()
 	{
-		//m_liftEncoder->Reset();
-		//m_leftEncoder->Reset();
-		//m_rightEncoder->Reset();
+		m_liftEncoder->Reset();
+		m_leftEncoder->Reset();
+		m_rightEncoder->Reset();
 
-		/*autonomousChooser = (Command *) chooser->GetSelected();
-		autonomousChooser -> Start();*/
+		if(autoSwitch -> Get() == true){
+			AutonomousTote();
+		}
+		else{
+			AutonomousBin();
+		}
 
 	}
 
-	/*void AutonomousBin()
+	void AutonomousBin()
 	{
-		while(m_liftEncoder->Get()<280){
-			m_solenoid -> Set(m_solenoid-> kReverse);
-			m_robotLift -> Set(.5);
-
-		}
-
-		m_robotLift -> Set(0);
-		m_solenoid -> Set(m_solenoid-> kForward);
-		while(m_leftEncoder->Get()<21840 && m_rightEncoder->Get()<21840){
-			m_robotDrive -> Drive(.5,0);
-		}
-
-		m_robotDrive -> Drive(0,0);
-
-		while(m_bottomLimitSwitch->Get() == false){
-			m_solenoid -> Set(m_solenoid-> kReverse);
+		while(m_liftEncoder->Get()<950){
+			m_solenoid -> Set(m_solenoid-> kForward);
 			m_robotLift -> Set(-.5);
+
 		}
 
 		m_robotLift -> Set(0);
-		while(m_leftEncoder->Get()>18905 && m_rightEncoder->Get()<18905){
-			m_robotDrive -> Drive(-.5,0);
-		}
-		m_robotDrive -> Drive(0,0);
+		m_solenoid -> Set(m_solenoid-> kReverse);
+
+		toCenterOfAutoZone();
+
 	}
 
 	void AutonomousTote()
 	{
-		while(m_liftEncoder->Get()<280){
-			m_solenoid -> Set(m_solenoid-> kReverse);
-			m_robotLift -> Set(.5);
+		while(m_liftEncoder->Get()<480){
+			m_solenoid -> Set(m_solenoid-> kForward);
+			m_robotLift -> Set(-.5);
 
 		}
 
 		m_robotLift -> Set(0);
-		m_solenoid -> Set(m_solenoid-> kForward);
+		m_solenoid -> Set(m_solenoid-> kReverse);
 
 		while(m_leftEncoder->Get()<5376)
 		{
 			m_robotDrive -> Drive(0,.5);
 		}
 		m_robotDrive -> Drive(0,0);
-		m_leftEncoder -> Reset();
-		m_rightEncoder-> Reset();
-		while(m_leftEncoder->Get()<21840 && m_rightEncoder->Get()<21840){
+
+		toCenterOfAutoZone();
+	}
+
+	void toCenterOfAutoZone{
+
+		//m_leftEncoder -> Reset();
+		//m_rightEncoder -> Reset();
+		while((m_leftEncoder->Get()<21840) && (m_rightEncoder->Get()<21840)){
 			m_robotDrive -> Drive(.5,0);
 		}
 
 		m_robotDrive -> Drive(0,0);
 
 		while(m_bottomLimitSwitch->Get() == false){
-			m_solenoid ->(m_solenoid-> kReverse);.
-			m_robotLift -> Set(-.5);
+			m_solenoid -> Set(m_solenoid-> kForward);
+			m_robotLift -> Set(.5);
 		}
 
 		m_robotLift -> Set(0);
+		m_solenoid -> Set(m_solenoid -> kReverse)
 		while(m_leftEncoder->Get()>18905 && m_rightEncoder->Get()<18905){
 			m_robotDrive -> Drive(-.5,0);
 		}
 		m_robotDrive -> Drive(0,0);
-	}*/
+
+	}
+	*/
 
 	void AutonomousPeriodic()
 	{
@@ -168,6 +180,7 @@ private:
 		solenoidValue = false;
 		level = 0;
 		newLiftEncoder = 0;
+		//compressorA -> SetClosedLoopControl(true);
 
 	}
 
@@ -179,6 +192,7 @@ private:
 		rightBumper = m_liftStick->GetRawButton(6);
 		leftBumper = m_liftStick -> GetRawButton(5);
 		//liftEncoder = m_liftEncoder -> Get();
+		compressorSwitch -> Get();
 
 		XboxA = m_liftStick -> GetRawButton(1);
 		XboxB = m_liftStick -> GetRawButton(2);
@@ -199,46 +213,52 @@ private:
 		else{*/
 		if(XboxA == true){
 
-			if(level < 3){
+			/*if(level < 3){
 				//m_robotDrive -> Drive(0,0);
 				newLiftEncoder = m_liftEncoder->Get() + 670;
 				m_solenoid -> Set(m_solenoid-> kForward);
-				printf("%i/n", m_liftEncoder->Get());
-				while(m_liftEncoder->Get()<= newLiftEncoder){
+				printf("%i\n", m_liftEncoder->Get());
+				while((m_liftEncoder->Get()<= newLiftEncoder) && (XboxStart == 0)){
 					m_robotLift -> Set(-1);
-					printf("%i/n", m_liftEncoder->Get());
+					printf("%i\n", m_liftEncoder->Get());
 					setDriveTrain();
+					XboxStart = m_liftStick -> GetRawButton(8);
 					// = m_liftEncoder -> Get();
 				}
 
 
 			}
 			level = level + 1;
-			m_solenoid -> Set(m_solenoid-> kReverse);
+			m_solenoid -> Set(m_solenoid-> kReverse);*/
+			compressorA -> Start();
 
 		}
 
 		else if(XboxB == true){
-			if(level > 0){
+			/*if(level > 0){
 				m_robotDrive -> Drive(0,0);
 				newLiftEncoder = m_liftEncoder -> Get() + 100;
-				{
+				while((m_liftEncoder->Get() <= newLiftEncoder) && (XboxStart == 0)){
 					m_robotLift -> Set(-.5);
+					setDriveTrain();
+					XboxStart = m_liftStick -> GetRawButton(8);
 				}
 				 // make via encoder count
 				newLiftEncoder = m_liftEncoder->Get() - 200;
 				m_solenoid -> Set(m_solenoid-> kForward);
-				while(m_liftEncoder->Get()>= newLiftEncoder){
+				while((m_liftEncoder->Get()>= newLiftEncoder) && (XboxStart == 0)){
 
 					m_robotLift -> Set(.5);
 					printf("%i\n", m_liftEncoder->Get());
 					setDriveTrain();
+					XboxStart = m_liftStick -> GetRawButton(8);
 
 				}
 
 			}
 			level = level - 1;
-			m_solenoid -> Set(m_solenoid-> kReverse);
+			m_solenoid -> Set(m_solenoid-> kReverse);*/
+			compressorA -> Stop();
 		}
 		else{
 			//if(abs(rightXboxY) >= .2){
@@ -263,6 +283,9 @@ private:
 		//printf("%i -- encoder\n", m_liftEncoder->Get());
 		std::cout << m_liftEncoder->Get() << ": encoder" << std::endl;
 		std::cout << level << ": level" << std::endl;
+		std::cout << compressorA -> GetPressureSwitchValue() << std::endl;
+		std::cout << compressorSwitch -> Get()<< ":switch" << std::endl;
+	//	std::cout << workplease << ": switch" << std::endl;
 		//printf("%i -- level\n", level);
 	}
 
