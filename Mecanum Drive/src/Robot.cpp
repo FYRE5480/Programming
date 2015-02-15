@@ -29,6 +29,7 @@ class FYRERobot: public IterativeRobot
 	float driveThrottle;
 	bool solenoidValue;
 	int level;
+	int counter;
 	bool XboxA;
 	bool XboxB;
 	bool XboxStart;
@@ -93,11 +94,12 @@ private:
 		compressorA -> Start();
 	}
 
-/*	void AutonomousInit()
+	void AutonomousInit()
 	{
 		m_liftEncoder->Reset();
 		m_leftEncoder->Reset();
 		m_rightEncoder->Reset();
+		counter = 0;
 
 		if(autoSwitch -> Get() == true){
 			AutonomousTote();
@@ -123,7 +125,7 @@ private:
 
 	}
 
-	void AutonomousTote()
+	/*void AutonomousTote()
 	{
 		while(m_liftEncoder->Get()<480){
 			m_solenoid -> Set(m_solenoid-> kForward);
@@ -141,9 +143,30 @@ private:
 		m_robotDrive -> Drive(0,0);
 
 		toCenterOfAutoZone();
+	}*/
+	
+	void AutonomousToteTime{
+	
+		while(m_liftEncoder->Get()<480){
+			m_solenoid -> Set(m_solenoid-> kForward);
+			m_robotLift -> Set(-.5);
+
+		}
+
+		m_robotLift -> Set(0);
+		m_solenoid -> Set(m_solenoid-> kReverse);
+
+		while(m_leftEncoder->Get()<5376)
+		{
+			m_robotDrive -> Drive(0,.5);
+		}
+		m_robotDrive -> Drive(0,0);
+
+		toCenterOfAutoZone();
+	
 	}
 
-	void toCenterOfAutoZone{
+	/*void toCenterOfAutoZone(){
 
 		//m_leftEncoder -> Reset();
 		//m_rightEncoder -> Reset();
@@ -196,6 +219,7 @@ private:
 
 		XboxA = m_liftStick -> GetRawButton(1);
 		XboxB = m_liftStick -> GetRawButton(2);
+		XboxStart = m_liftStick -> GetRawButton(8);
 		// Drive Stick Dead Zone
 
 		setDriveTrain();
@@ -213,7 +237,7 @@ private:
 		else{*/
 		if(XboxA == true){
 
-			/*if(level < 3){
+			if(level < 3){
 				//m_robotDrive -> Drive(0,0);
 				newLiftEncoder = m_liftEncoder->Get() + 670;
 				m_solenoid -> Set(m_solenoid-> kForward);
@@ -224,24 +248,26 @@ private:
 					setDriveTrain();
 					XboxStart = m_liftStick -> GetRawButton(8);
 					// = m_liftEncoder -> Get();
+					updatePnuematics();
 				}
 
-
+				level = level + 1;
+				m_solenoid -> Set(m_solenoid-> kReverse);
 			}
-			level = level + 1;
-			m_solenoid -> Set(m_solenoid-> kReverse);*/
-			compressorA -> Start();
+
+
 
 		}
 
 		else if(XboxB == true){
-			/*if(level > 0){
+			if(level > 0){
 				m_robotDrive -> Drive(0,0);
 				newLiftEncoder = m_liftEncoder -> Get() + 100;
 				while((m_liftEncoder->Get() <= newLiftEncoder) && (XboxStart == 0)){
 					m_robotLift -> Set(-.5);
 					setDriveTrain();
 					XboxStart = m_liftStick -> GetRawButton(8);
+					updatePnuematics();
 				}
 				 // make via encoder count
 				newLiftEncoder = m_liftEncoder->Get() - 200;
@@ -252,13 +278,13 @@ private:
 					printf("%i\n", m_liftEncoder->Get());
 					setDriveTrain();
 					XboxStart = m_liftStick -> GetRawButton(8);
+					updatePnuematics();
 
 				}
-
+               level = level - 1;
+               m_solenoid -> Set(m_solenoid-> kReverse);
 			}
-			level = level - 1;
-			m_solenoid -> Set(m_solenoid-> kReverse);*/
-			compressorA -> Stop();
+
 		}
 		else{
 			//if(abs(rightXboxY) >= .2){
@@ -279,14 +305,25 @@ private:
 
 
 		}
+		updatePnuematics();
 		//printf("%F",rightXboxY);
 		//printf("%i -- encoder\n", m_liftEncoder->Get());
 		std::cout << m_liftEncoder->Get() << ": encoder" << std::endl;
-		std::cout << level << ": level" << std::endl;
+		/*std::cout << level << ": level" << std::endl;
 		std::cout << compressorA -> GetPressureSwitchValue() << std::endl;
-		std::cout << compressorSwitch -> Get()<< ":switch" << std::endl;
+		std::cout << compressorSwitch -> Get()<< ":switch" << std::endl;*/
 	//	std::cout << workplease << ": switch" << std::endl;
 		//printf("%i -- level\n", level);
+	}
+
+	void updatePnuematics()
+	{
+		if (compressorSwitch -> Get() == false){
+			compressorA -> Start();
+		}
+		else{
+			compressorA -> Stop();
+		}
 	}
 
 	void setDriveTrain()
