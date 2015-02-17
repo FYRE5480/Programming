@@ -92,36 +92,40 @@ private:
 		lw = LiveWindow::GetInstance();
 		compressorA -> ClearAllPCMStickyFaults();
 		compressorA -> Start();
+		compressorA -> SetClosedLoopControl(false);
 	}
 
 	void AutonomousInit()
 	{
 		m_liftEncoder->Reset();
-		m_leftEncoder->Reset();
-		m_rightEncoder->Reset();
+		//m_leftEncoder->Reset();
+		//m_rightEncoder->Reset();
 		counter = 0;
 
-		if(autoSwitch -> Get() == true){
-			AutonomousTote();
-		}
-		else{
-			AutonomousBin();
-		}
+		/*if(autoSwitch -> Get() == true){
+			AutonomousToteTime();
+		}*/
+		//else{
+			//AutonomousBin();
+		//}
+
+		AutonomousBin();
 
 	}
 
 	void AutonomousBin()
 	{
-		while(m_liftEncoder->Get()<950){
+		while(m_liftEncoder->Get()<1000){
 			m_solenoid -> Set(m_solenoid-> kForward);
 			m_robotLift -> Set(-.5);
+			std::cout << m_liftEncoder->Get() << std::endl;
 
 		}
 
 		m_robotLift -> Set(0);
 		m_solenoid -> Set(m_solenoid-> kReverse);
 
-		toCenterOfAutoZone();
+		toCenterOfAutoZoneTime();
 
 	}
 
@@ -144,9 +148,9 @@ private:
 
 		toCenterOfAutoZone();
 	}*/
-	
-	void AutonomousToteTime{
-	
+
+	void AutonomousToteTime(){
+
 		while(m_liftEncoder->Get()<480){
 			m_solenoid -> Set(m_solenoid-> kForward);
 			m_robotLift -> Set(-.5);
@@ -156,14 +160,16 @@ private:
 		m_robotLift -> Set(0);
 		m_solenoid -> Set(m_solenoid-> kReverse);
 
-		while(m_leftEncoder->Get()<5376)
+		while(counter<2700)
 		{
-			m_robotDrive -> Drive(0,.5);
+			m_robotDrive -> Drive(-.5,-.5);
+			counter ++;
 		}
 		m_robotDrive -> Drive(0,0);
+		counter = 0;
 
-		toCenterOfAutoZone();
-	
+		toCenterOfAutoZoneTime();
+
 	}
 
 	/*void toCenterOfAutoZone(){
@@ -176,20 +182,42 @@ private:
 
 		m_robotDrive -> Drive(0,0);
 
-		while(m_bottomLimitSwitch->Get() == false){
+		while(m_liftEncoder){
 			m_solenoid -> Set(m_solenoid-> kForward);
 			m_robotLift -> Set(.5);
 		}
 
 		m_robotLift -> Set(0);
-		m_solenoid -> Set(m_solenoid -> kReverse)
-		while(m_leftEncoder->Get()>18905 && m_rightEncoder->Get()<18905){
+		m_solenoid -> Set(m_solenoid -> kReverse);
+		while((m_leftEncoder->Get()>18905) && (m_rightEncoder->Get()>18905)){
 			m_robotDrive -> Drive(-.5,0);
 		}
 		m_robotDrive -> Drive(0,0);
 
 	}
 	*/
+
+	 void toCenterOfAutoZoneTime(){
+		while(counter < 5250){
+			m_robotDrive -> Drive(-.5,0);
+			counter++;
+		}
+			m_robotDrive -> Drive(0,0);
+			counter = 0;
+
+		while(m_liftEncoder -> Get()> 100){
+			m_solenoid -> Set(m_solenoid-> kForward);
+			m_robotLift -> Set(.5);
+		}
+
+		m_robotLift -> Set(0);
+		m_solenoid -> Set(m_solenoid -> kReverse);
+		while(counter < 800){
+			m_robotDrive -> Drive(.5,0);
+			counter++;
+		}
+		m_robotDrive -> Drive(0,0);
+	}
 
 	void AutonomousPeriodic()
 	{
@@ -238,17 +266,32 @@ private:
 		if(XboxA == true){
 
 			if(level < 3){
-				//m_robotDrive -> Drive(0,0);
-				newLiftEncoder = m_liftEncoder->Get() + 670;
-				m_solenoid -> Set(m_solenoid-> kForward);
-				printf("%i\n", m_liftEncoder->Get());
-				while((m_liftEncoder->Get()<= newLiftEncoder) && (XboxStart == 0)){
-					m_robotLift -> Set(-1);
+				if (level == 0){
+					newLiftEncoder = m_liftEncoder->Get() + 300;
+					m_solenoid -> Set(m_solenoid-> kForward);
 					printf("%i\n", m_liftEncoder->Get());
-					setDriveTrain();
-					XboxStart = m_liftStick -> GetRawButton(8);
-					// = m_liftEncoder -> Get();
-					updatePnuematics();
+					while((m_liftEncoder->Get()<= newLiftEncoder) && (XboxStart == 0)){
+						m_robotLift -> Set(-1);
+						printf("%i\n", m_liftEncoder->Get());
+						setDriveTrain();
+						XboxStart = m_liftStick -> GetRawButton(8);
+						// = m_liftEncoder -> Get();
+						updatePnuematics();
+					}
+				}
+				else{
+					//m_robotDrive -> Drive(0,0);
+					newLiftEncoder = m_liftEncoder->Get() + 670;
+					m_solenoid -> Set(m_solenoid-> kForward);
+					printf("%i\n", m_liftEncoder->Get());
+					while((m_liftEncoder->Get()<= newLiftEncoder) && (XboxStart == 0)){
+						m_robotLift -> Set(-1);
+						printf("%i\n", m_liftEncoder->Get());
+						setDriveTrain();
+						XboxStart = m_liftStick -> GetRawButton(8);
+						// = m_liftEncoder -> Get();
+						updatePnuematics();
+					}
 				}
 
 				level = level + 1;
@@ -264,7 +307,7 @@ private:
 				m_robotDrive -> Drive(0,0);
 				newLiftEncoder = m_liftEncoder -> Get() + 100;
 				while((m_liftEncoder->Get() <= newLiftEncoder) && (XboxStart == 0)){
-					m_robotLift -> Set(-.5);
+					m_robotLift -> Set(-1);
 					setDriveTrain();
 					XboxStart = m_liftStick -> GetRawButton(8);
 					updatePnuematics();
@@ -309,6 +352,7 @@ private:
 		//printf("%F",rightXboxY);
 		//printf("%i -- encoder\n", m_liftEncoder->Get());
 		std::cout << m_liftEncoder->Get() << ": encoder" << std::endl;
+		std::cout << compressorSwitch -> Get() << ": switch" << std::endl;
 		/*std::cout << level << ": level" << std::endl;
 		std::cout << compressorA -> GetPressureSwitchValue() << std::endl;
 		std::cout << compressorSwitch -> Get()<< ":switch" << std::endl;*/
